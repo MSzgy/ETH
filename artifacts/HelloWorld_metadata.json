@@ -1,62 +1,66 @@
 {
 	"compiler": {
-		"version": "0.8.7+commit.e28d00a7"
+		"version": "0.4.26+commit.4563c3fc"
 	},
 	"language": "Solidity",
 	"output": {
 		"abi": [
 			{
+				"constant": true,
 				"inputs": [],
-				"stateMutability": "nonpayable",
-				"type": "constructor"
+				"name": "storedData",
+				"outputs": [
+					{
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"payable": false,
+				"stateMutability": "view",
+				"type": "function"
 			},
 			{
+				"constant": false,
 				"inputs": [
 					{
-						"internalType": "uint256",
 						"name": "data",
 						"type": "uint256"
 					}
 				],
 				"name": "set",
 				"outputs": [],
+				"payable": false,
 				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
+				"constant": true,
 				"inputs": [],
-				"name": "storedData",
+				"name": "get",
 				"outputs": [
 					{
-						"internalType": "uint256",
 						"name": "",
 						"type": "uint256"
 					}
 				],
+				"payable": false,
 				"stateMutability": "view",
 				"type": "function"
 			}
 		],
 		"devdoc": {
-			"kind": "dev",
-			"methods": {},
-			"version": 1
+			"methods": {}
 		},
 		"userdoc": {
-			"kind": "user",
-			"methods": {},
-			"version": 1
+			"methods": {}
 		}
 	},
 	"settings": {
 		"compilationTarget": {
-			"Study/ETH/Hello world.sol": "HelloWorld"
+			"Hello world.sol": "HelloWorld"
 		},
-		"evmVersion": "london",
+		"evmVersion": "byzantium",
 		"libraries": {},
-		"metadata": {
-			"bytecodeHash": "ipfs"
-		},
 		"optimizer": {
 			"enabled": false,
 			"runs": 200
@@ -64,12 +68,10 @@
 		"remappings": []
 	},
 	"sources": {
-		"Study/ETH/Hello world.sol": {
-			"keccak256": "0x2fee3cc0426644f2a988a3aaf80e4accda888c356ef0723b923be16e0b6f065b",
-			"license": "UNLICENSED",
+		"Hello world.sol": {
+			"keccak256": "0x63f3bfc4cbed63cea68255b0ed4d483974d20e1b5fe984310c64257cacfa4915",
 			"urls": [
-				"bzz-raw://60b6e079ca12a86e51a8eb80bedeae90aba0cc7adce8ed1bb3b95d6febe7e224",
-				"dweb:/ipfs/Qmb2YZgMRfE7sSK4N9ALqTP21RygxAKrtuEBFFZ3hruznh"
+				"bzzr://ad4d5632707cd7114bd7c5110116a7b00c2b7c0f7d23563c292a1b28a573a9eb"
 			]
 		}
 	},

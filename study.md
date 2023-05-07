@@ -1,4 +1,4 @@
-#  密码学
+#   密码学
 
 非对称加密
 
@@ -56,6 +56,8 @@
 
   以太坊私钥事实上只是一个256位的随机数，用于发送以太的交易中创建签名来证明自己对资金的所有权。
 
+  **在实践中，私钥可以由账户密码和keyStore文件得到**
+
 - 公钥（Public Key）
 
   公钥是由私钥通过椭圆曲线加密secp256k1算法单向生成的512位（64字节）数。
@@ -64,3 +66,204 @@
 
   地址是由公钥的Keccak-256单向哈希，取最后20个字节（160位）派生出来的标识符。
 
+## 2 实践
+
+## 2.1 clef
+
+Manage accounts
+
+## 2.2 geth
+
+Geth (short for Go Ethereum) is a command-line interface for running an Ethereum node and interacting with the Ethereum network. It can be used to:
+
+1. Mine Ethereum blocks and validate transactions
+2. Store and manage the Ethereum blockchain
+3. Deploy and interact with smart contracts on the Ethereum network
+4. Transfer and manage Ether and other Ethereum-based tokens
+5. Explore and search the Ethereum blockchain
+
+Geth is written in the Go programming language and is one of the most popular client implementations for the Ethereum network. It can be used to run a full Ethereum node, which means that you can have a full copy of the Ethereum blockchain on your computer and participate in the consensus process by validating transactions and blocks.
+
+
+
+**常用命令**
+
+1. Initialize the Private Network: Use the following command to initialize your private network using the Genesis file.
+
+   The gensis file is as following:
+
+   ```json
+   {
+       "config": {
+           "chainId": 12345,
+           "homesteadBlock": 0,
+           "eip150Block": 0,
+           "eip155Block": 0,
+           "eip158Block": 0
+       },
+       "alloc": {
+           "0x0000000000000000000000000000000000000001": {
+               "balance": "1000000000000000000"
+           },
+           "0x0000000000000000000000000000000000000002": {
+               "balance": "1000000000000000000"
+           }
+       },
+       "coinbase": "0x0000000000000000000000000000000000000000",
+       "difficulty": "0x20000",
+       "extraData": "",
+       "gasLimit": "0x2fefd8",
+       "nonce": "0x0000000000000042",
+       "mixhash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+       "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+       "timestamp": "0x00"
+   }
+   ```
+
+   In this example, the `chainId` field specifies the network ID for the private network. The `alloc` field defines the initial allocations of Ether to addresses. In this case, two addresses have been allocated 1 Ether each. The `difficulty` field specifies the initial difficulty for mining blocks, and the `gasLimit` field sets the maximum gas limit for each block. The other fields in the Genesis file specify various parameters for the network, such as the coinbase address, the nonce, and the timestamp.
+
+   Note that the exact configuration of the Genesis file will depend on your specific use case and requirements. You can refer to the Ethereum documentation for more information on the Genesis file and the available configuration options.
+
+   ***Q : what the coinsbase means ?***
+
+   ***A*** : The coinbase in Ethereum is the address that receives the block rewards for mining a block. In other words, the miner who successfully mines a block is rewarded with a certain amount of Ether, and this reward is sent to the coinbase address.
+
+   The coinbase address is specified in the Genesis file when you initialize your private Ethereum blockchain. It is important to note that the coinbase address is not a real address in the sense that it can be used to hold or transfer funds. Instead, it is a placeholder for the block reward, and it is automatically updated with each new block that is mined.
+
+   In a public Ethereum network, the coinbase address is typically set to an address controlled by the miner who successfully mines the block. In a private network, you can set the coinbase address to any address you choose. For example, in a test or development environment, you might set the coinbase address to an address controlled by your development team, so that the rewards from mining can be used for testing purposes. 
+
+   
+
+```shell
+geth --datadir=<path to data directory> init <path to Genesis file>
+```
+
+2. Start the Geth Node: To start your private network, you will need to run a Geth node. You can use the following command to start the node:
+
+```shell
+geth --datadir=<path to data directory> --networkid <network ID> - --http --nodiscover console
+```
+
+3. Interact with Geth
+
+   https://geth.ethereum.org/docs/getting-started#interact-with-geth
+
+## 比特币和以太坊的区别
+
+- 比特币是一种数字货币，以太坊是一种平台
+- 比特币是一种去中心化的货币，以太坊是一种去中心化的应用平台
+- 比特币是一种点对点的货币，以太坊是一种点对点的应用平台
+
+# UTXO vs Account
+
+- UTXO
+
+  - 每个交易都是一个UTXO
+  - 每个UTXO都有一个唯一的ID
+  - 每个UTXO都有一个金额
+  - 每个UTXO都有一个锁定脚本
+  - 每个UTXO都有一个解锁脚本
+
+- Account
+  - 每个账户都有一个唯一的地址
+  - 每个账户都有一个余额
+  - 每个账户都有一个nonce
+  - 每个账户都有一个锁定脚本
+  - 每个账户都有一个解锁脚本
+  - 每个账户都有一个交易记录
+  - 每个账户都有一个状态树
+  - 每个账户都有一个代码
+  - 每个账户都有一个存储
+
+# ETH账户类型
+
+- 普通账户
+  - 有私钥
+  - 有地址
+  - 有余额
+  - 可发送交易（转币或触发合约代码）
+  - 有交易记录
+  - 有状态树
+  - 有代码
+  - 有存储
+  - 有nonce
+  - 有锁定脚本
+  - 有解锁脚本
+
+- 合约账户
+
+# 以太坊交易
+
+签名的数据包，由EOA发起，包含以下内容：
+- 消息的接收方地址
+- 消息的发送方地址
+- 消息的发送方签名
+- 消息的发送方nonce
+- 消息的发送方gasPrice
+- 消息的发送方gasLimit（start gas）
+- 消息的发送方value
+- 消息的发送方data
+
+交易是由外部拥有的账户发起的签名消息，由以太坊网络传输，并被序列化后记录在以太坊区块链上。
+
+# 消息
+
+合约可以向其他合约发送"消息"
+消息是不会被序列化的虚拟对象，只存在于以太坊执行环境(EVM)中
+消息包含以下内容：
+- 消息的接收方地址
+- 消息发送方
+- 金额（value)
+- 数据（data)
+- gasLimit（start gas)
+
+## 以太坊的应用
+
+- 金融
+- 保险
+
+# EVM
+
+## EVM的数据存储
+
+- Storage
+  - 每个账户都有一块持久化的存储空间，将256位字映射到256位字的key-value存储区，可以理解为合约的数据库
+  - 永久存储在区块链中，由于会永久保存合约状态变量，所以读写的gas开销也最大。
+- Memory
+  - 每一次消息调用，都会分配一块内存空间，用于存储临时数据，比如函数参数、返回值、中间变量等。
+  - 生命周期仅为一次消息调用，仅保存临时变量，调用结束后会被释放，所以读写的gas开销也较小。
+- Stack
+  - EVM不是基于寄存器的，而是基于栈的。
+  - 存放部分局部值类型变量，几乎免费使用的内存，但有数量限制。
+
+## EVM的指令集
+
+- 指令集
+  - 以太坊的虚拟机EVM是基于栈的，指令集也是基于栈的，指令集的每一条指令都会对栈进行操作，比如压栈、出栈、复制栈顶元素等。
+  - 指令集的每一条指令都有一个唯一的操作码，比如0x01代表STOP指令，0x02代表ADD指令，0x03代表MUL指令，0x04代表SUB指令，0x05代表DIV指令，0x06代表SDIV指令，0x07代表MOD指令，0x08代表SMOD指令，0x09代表ADDMOD指令，0x0a代表MULMOD指令，0x0b代表EXP指令，0x0c代表SIGNEXTEND指令，0x10代表LT指令，0x11代表GT指令，0x12代表SLT指令，0x13代表SGT指令，0x14代表EQ指令，0x15代表ISZERO指令，0x16代表AND指令，0x17代表OR指令，0x18代表XOR指令，0x19代表NOT指令，0x1a代表BYTE指令，0x20代表SHA3指令，0x30代表ADDRESS指令，0x31代表BALANCE指令，0x32代表ORIGIN指令，0x33代表CALLER指令，0x34代表CALLVALUE指令，0x35代表CALLDATALOAD指令，0x36代表CALLDATASIZE指令，0x37代表CALLDATACOPY指令，0x38代表CODESIZE指令，0x39代表CODECOPY指令，0x3a代表GASPRICE指令，0x3
+- 所有的指令都是针对"256位的字（word）"这个基本的数据类型来进行操作。
+- 具备常用的算术、位、逻辑和比较操作，也可以做到有条件和无条件跳转。
+- 合约可以访问当前区块的相关属性，比如区块的高度、区块的时间戳、区块的难度等。
+
+## 消息调用
+
+- 合约调用
+  - 合约可以调用其他合约，也可以调用外部账户。
+  - 合约调用的gas开销是最大的，因为合约调用会产生一个新的EVM实例，新的EVM实例会复制当前合约的状态，然后执行合约调用的代码，执行完毕后，会将新的状态写回到当前合约的状态中。
+- 外部账户调用
+- 以太坊的消息调用是基于栈的，消息调用的参数和返回值都是通过栈来传递的。
+- 消息调用的参数和返回值都是以256位字为单位的，也就是说，如果消息调用的参数是一个32字节的数组，那么这个数组会被分成32个256位字，每个256位字都会被压入栈中。
+
+## 委托调用
+
+- 委托调用是一种特殊的消息调用，它的gas开销是最小的，因为委托调用不会产生新的EVM实例，也不会复制当前合约的状态，而是直接使用当前合约的状态。
+- 目标地址的代码将在发起调用的合约的上下文中执行，并且msg.sender和msg.value将与发起调用的合约相同。
+- 可以由此实现合约的升级，比如合约A调用合约B，合约B的代码发生了变化，那么合约A调用合约B的时候，就会调用合约B的新代码。
+- 可以由此实现"库"，可以将复用的代码库抽取出来，然后通过委托调用的方式来调用这些代码库。
+
+## 合约的创建与自毁
+
+- 通过一个特殊的消息调用来创建合约，这个特殊的消息调用的目标地址是0x0，这个消息调用的数据就是合约的代码。
+- 通过create calls，合约可以创建其他合约。
+- 合约创建其他合约，不会写在区块链上，在内存里面，l而是写在交易的日志中。
+- 合约代码从区块链上移除的唯一方式就是自毁，通过selfdestruct指令来实现自毁。
