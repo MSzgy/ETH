@@ -267,3 +267,93 @@ geth --datadir=<path to data directory> --networkid <network ID> - --http --nodi
 - 通过create calls，合约可以创建其他合约。
 - 合约创建其他合约，不会写在区块链上，在内存里面，l而是写在交易的日志中。
 - 合约代码从区块链上移除的唯一方式就是自毁，通过selfdestruct指令来实现自毁。
+
+
+
+# solidity
+
+## 子货币
+
+```solidity
+pragma solidity ^0.4.22;
+
+contract Coin{
+    address public minter;
+    mapping (address => uint) public balances;
+
+    event Sent(address from, address to, uint amount);
+
+    constructor() public {
+        minter = msg.sender;
+    }
+
+    function mint(address receiver, uint amount) public {
+        require(msg.sender == minter);
+        require(amount < 1e60);
+        balances[receiver] += amount;
+    }
+
+    function send(address receiver, uint amount) public {
+        require(amount <= balances[msg.sender], "Insufficient balance.");
+        balances[msg.sender] -= amount;
+        balances[receiver] += amount;
+        emit Sent(msg.sender, receiver, amount);
+    }
+}
+```
+
+
+
+## 数据结构
+
+- 字符数组
+
+  - 定长
+    - 值类型，bytes1, bytes2, .... bytes32 分别代表了长度为1到32的字节序列
+    - 有一个.length属性，返回数组长度
+  - 变长
+    - 引用类型
+    - 包括bytes，string， 不同的是bytes是Hex字符串，string是UTF-8编码的字符串
+
+- 枚举 （Enum）
+
+  - 枚举类型用来用户自定义二一组常量值
+
+  - 与C语言的枚举类型非常相似，对应整型值
+
+    ```solidity
+    pragma solidity >=0.4.0 <0.6.0
+    contract Purchase {
+    	enum State {Created, Locked, Inactive}
+    }
+    ```
+
+- 数组 （Array)
+
+  - 固定大小k和元素类型T的数组被写为`T[K]`, 动态大小的数组为`T[]`。
+    - 一个由5个uint动态数组组成的数组是`uint[][5]` 
+    - 如果要添加新元素，则必须使用.push() 或将.length增大
+    - 变长的storage数组和bytes （不包括string）有一个push()方法，可以将一个新元素附加到数组末端，返回值为当前长度。
+
+- 结构 （Struct)
+
+  - 结构类型可以在映射和数组中使用，它们本身可以包含映射和数组
+
+  - 结构不能包含自己类型的成员，但可以作为自己数组成员的类型，也可以作为自己映射成员的值类型
+
+    ```solidity
+    pragma solidity >=0.4.0 <0.6.0;
+    contract Ballot {
+    	struct Voter {
+    		uint weight;
+    		bool voted;
+    		uint vote;
+    	}
+    }
+    ```
+
+- 映射 （Mapping）
+
+  - 声明一个映射：mapping (_KeyType => _ValueType)
+  - _KeyType可以是任何基本类型，内置类型加上字节和字符串，不允许使用用户定义的复杂类型，如枚举，映射，结构以及除bytes和string之外的任何数组类型
+  - _ValueType可以是任何类型，包括映射。

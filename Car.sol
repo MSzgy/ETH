@@ -3,6 +3,7 @@ pragma solidity ^0.4.22;
 contract Car {
     string brand;
     uint public price;
+    enum Weekday { Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday }
     constructor() public {
         brand = "Toyota";
         price = 10000000000000000000;
@@ -19,4 +20,12 @@ contract Car {
     function getPrice() public view returns (uint) {
         return price;
     }
+    function test() public pure returns (uint) {
+        bytes17 a;
+        return a.length;
+    }
+    function testEnum() public pure returns (uint) {
+        return uint(Weekday.Tuesday);
+    }
+
 }
