@@ -355,5 +355,87 @@ contract Coin{
 - 映射 （Mapping）
 
   - 声明一个映射：mapping (_KeyType => _ValueType)
+
   - _KeyType可以是任何基本类型，内置类型加上字节和字符串，不允许使用用户定义的复杂类型，如枚举，映射，结构以及除bytes和string之外的任何数组类型
+
   - _ValueType可以是任何类型，包括映射。
+
+    ```solidity
+    pragma solidity >=0.4.0 <0.6.0;
+    contract MappingExample {
+    	mapping(address => uint) public balances;
+    	function update(uint newBalance) public {
+    		balances[msg.sender] = newBalance;
+    	}
+    }
+    	
+    	contract MappingUser {
+    		function f() public returns (uint) {
+    			MappingExample m = new MappingExample();
+    			m.update(100);
+    			return m.balances(address(this));
+    		}
+    	}
+    ```
+
+## 数据位置
+
+- 所有的复杂类型，即数组、结构和映射类型，都有一个额外属性，“数据位置”， 用来说明数据是保存在内存memory中还是存储storage中
+- 根据上下文不同，大多数时候数据有默认的位置，但也可以通过在类型名后增加关键字storage或memory进行修改
+- 函数参数（包括返回的参数）的数据位置默认是memory，局部变量的数据位置默认是storage，状态变量的数据位置强制是storage
+- 第三种数据位置，calldata，这是一块只读的且不会永久存储的位置，用来存储函数参数。外部函数的参数（非返回参数）的数据位置被强制指定为calldata,效果跟memory差不多。
+
+**总结：**
+
+- 强制指定的数据位置
+  - 外部函数的参数（不包括返回参数）：calldata
+  - 状态变量：storage
+- 默认数据位置
+  - 函数参数（包括返回参数）：memory
+  - 引用类型的局部变量：storage
+  - 值类型的局部变量：栈（stack)
+- 特别要求
+  - 公开可见（public visible）的函数参数一定是memory类型，如果要求是storage类型，则必须是private或者internal函数，防止随意地公开调用占用资源。 
+
+## 函数声明和类型
+
+```solidity
+				 // 函数名称 // 函数 类型 // 返回类型
+function getBrand() public view returns (string) {
+	return brand;
+}
+```
+
+函数的值类型有两类： - 内部（internal）函数 和 外部 （external）函数
+
+- 内部函数只能在当前合约内被调用 （更具体来说，在当前代码块内，包括内部库函数和继承的函数中），因为它们不能在当前合约上下文的外部被执行。
+- 外部函数由有一个地址和一个函数签名组成，可以通过外部函数调用传递或者返回
+- 调用内部函数： 直接使用名字f
+- 调用外部函数：this.f (当前合约)，a.f(外部合约)
+
+### 函数可见性
+
+函数可见性可以指定为external，public，internal或者private, 对于状态变量， 不能设置为external，默认是internal.
+
+- external：外部函数作为合约接口的一部分，意味着可以从其他合约和交易中调用。一个外部函数f不能从内部调用（即f不起作用，但this.f()可以）。当收到大量数据时，外部函数才更有效率。
+- public：public函数是合约接口的一部分，可以在内部或者通过消息调用，对于public 状态变量，会自动生成一个getter函数。
+- Internal：这些函数和状态变量只能是内部访问（即从当前合约内部或从它派生的合约访问），不能使用this调用。
+- private：private函数和状态变量仅在当前定义它们的和雨中使用，并且不能被派生合约使用。
+
+### 函数的状态可变性
+
+- pure：纯函数，不允许修改或访问状态
+- view：不允许修改状态
+- Payable：允许从消息调用中接收以太币Ether
+- constant：与view相同，一般指修饰状态变量，除初始化外，不允许赋值
+
+#### 修改状态
+
+- 修改状态变量
+- 产生事件
+- 创建其他合约
+- 使用selfdestruct
+- 通过调用发送以太币
+- 调用任何没有标记为view或者pure的函数
+- 使用低级调用
+- 使用包含特定操作码的内联汇编
