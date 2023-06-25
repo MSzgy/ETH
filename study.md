@@ -420,7 +420,7 @@ function getBrand() public view returns (string) {
 - external：外部函数作为合约接口的一部分，意味着可以从其他合约和交易中调用。一个外部函数f不能从内部调用（即f不起作用，但this.f()可以）。当收到大量数据时，外部函数才更有效率。
 - public：public函数是合约接口的一部分，可以在内部或者通过消息调用，对于public 状态变量，会自动生成一个getter函数。
 - Internal：这些函数和状态变量只能是内部访问（即从当前合约内部或从它派生的合约访问），不能使用this调用。
-- private：private函数和状态变量仅在当前定义它们的和雨中使用，并且不能被派生合约使用。
+- private：private函数和状态变量仅在当前定义它们的合约中使用，并且不能被派生合约使用。
 
 ### 函数的状态可变性
 
@@ -439,3 +439,108 @@ function getBrand() public view returns (string) {
 - 调用任何没有标记为view或者pure的函数
 - 使用低级调用
 - 使用包含特定操作码的内联汇编
+
+#### 以下被认为是从状态中进行读取
+
+- 读取状态变量
+- 访问this.balance 或者 <address>.balance
+- 访问block，tx，msg中任意成员，（除msg.sig和msg.data之外）
+- 调用任何为标记为pure的函数
+- 使用包含某些操作码的内联汇编
+
+#### 函数修饰器
+
+- 使用修饰器modifer可以轻松改变函数的行为，例如，可以在执行函数之前自动检查某个条件，修饰器modifier是合约的可继承属性，并可能被派生合约覆盖
+- 如果同个函数有多个修饰器modifier，它们之间可以以空格隔开，修饰器modifier会依次检查执行
+
+### 回溯函数
+
+- 合约中的特殊函数，没有名字，不能有参数也不能有返回值
+- 如果在一个到合约的调用中，没有其他函数与给定函数标识符匹配（或者没有提供调用数据），那么这个函数（fallback函数）会被执行
+- 每当合约接收到以太币（没有任何数据），回退函数就会执行，此外，为了接收以太币，fallback函数必须标记为payable，如果不存在这样的函数，则合约不能通过常规交易接收以太币
+- 在上下文中通常只有很少的gas可以用来完成回退函数的调用，所以使fallback函数的调用尽量廉价很重要
+
+## 事件（event）
+
+- 事件是以太坊EVM提供的一种日志基础设施，事件可以用来做操作记录，存储为日志，也可以用来实现一些交互功能，比如通知UI，返回函数调用结果等
+- 当定义的时间触发时，我们可以将事件存储到EVM的交易日志中，日志是区块链中的一种特殊数据结构；日志与合约关联，与合约的存储合并存入区块链中；只要某个区块可以访问，其相关的日志就可以访问；但在合约中，我们不能直接访问日志和事件数据
+- 可以通过日志实现简单支付验证SPV（Simplified Payment Verification）,如果一个外部实体提供了一个带有这种证明的合约，它可以检查日志是否真实存在于区块链中
+
+## 异常处理
+
+- Solidity使用”状态恢复异常“来处理异常，这样的异常将撤销对当前调用（及其所有子调用）中的状态所做的所有修改，并且对调用者返回错误
+- 函数assert和require可以用于判断条件，并在不满足条件时抛出异常
+- assert()一般只用于测试内部错误，并检查常量
+- require() 应用于确保满足有效条件（如输入或合约状态变量），或验证调用外部合约的返回值
+- revert() 用于抛出异常，它可以标记一个错误并将当前调用回退
+
+# web3.js
+
+- JavaScript app API
+- 可以通过RPC调用与本地节点通信，它可以用于任何暴露了RPC层的以太坊节点
+- 包含eth对象- web3.eth（专门与以太坊区块链交互）
+
+### 模块加载
+
+- 首先需要将web3模块安装在项目中
+
+  ```solidity
+  npm install web3@0.20.1
+  ```
+
+- 然后创建一个web3实例，设置一个”provider“
+
+- 为了保证设置好的provider不被覆盖掉，在引入web3之前，我们一般要做当前环境检查
+
+  ```javascript
+  if (typeof web3 !== 'undefined') {
+    web3 = new Web3(web3.currentProvider);
+  } else {
+    web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+  }
+  ```
+
+### 异步回调（callback）
+
+- Web3js API设计的最初目的，主要是为了和本地RPC节点共同使用，所以默认情况下发送的是同步HTTP请求
+
+- 如果要发送异步请求，可以在函数的最后一个参数位置上，传入一个回调函数，回调函数是可选的
+
+- 我们一般采用的回调风格是“错误优先”，例如：
+
+  ```javascript
+  web3.eth.getBlock(48, function(error,result){
+  	if (!error) {
+      console.log(JSON.stringify(result));
+  	} else {
+      console.error(error);
+    }
+  })
+  ```
+
+### 回调Promise事件
+
+- 大多数的web3对象允许将一个回调函数作为最后一个参数传入，同时会返回一个promise用于链式函数调用
+
+- 以太坊作为一个区块链系统，一次请求具有不同的结束阶段。为了满足这样的要求，1.0.0版本将这类函数调用的返回值包成一个 promiseEvent
+
+- PromiseEvent的用法就像promise一样，另外还加入了.on, .once, .off方法
+
+  ```javascript
+  web3.eth.sendTransaction({from: '0x123...', data: '0x432'})
+  .once('transactionHash', function(hash){...})
+  .once('receipt', function(receipt){...})
+  .on('confirmation', function(confNumber, receipt){...})
+  .then(function(receipt){...})
+  ```
+
+### 应用二进制接口 （ABI）
+
+- web3.js通过以太坊智能合约的json接口（Application Binary Interface, ABI）创建一个JavaScript对象，用来在js代码中描述
+- 函数（functions）
+  - type: 默认fuction, 也可能是“constructor”
+  - Constant, payable, stateMutability: 函数的状态可变性
+  - Inputs, outputs: 函数输入、输出阐述描述列表
+- 事件（events）
+  - type: 总是“event”
+  - Inputs: 输入对象列表，包括name、type、indexed
